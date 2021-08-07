@@ -1,0 +1,12 @@
+.Search {
+  margin-top: 100px;
+  margin-left: 100px;
+}
+
+.Input {
+  width: 60%;
+  height: 2.5rem;
+  margin-left: 100px;
+  font-size: large;
+  font-weight: 500;
+}
