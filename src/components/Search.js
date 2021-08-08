@@ -1,4 +1,5 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
+import InputContext from '../store/InputContext';
 import styles from './Search.module.css';
 
 const setTimer = duration => {
@@ -11,30 +12,41 @@ const setTimer = duration => {
 
 const errorCatchingFunction = errorFunction => fn => () => fn().catch(err => errorFunction(err.message));
 
-const Search = () => {
-    const [searchingMovie, setSearchingMovie] = useState('');
+const Search = React.memo(({ sendTypingState }) => {
+    const { movies: { allMovies, inputMovie }, dispatch } = useContext(InputContext);
+    const [searchingMovie, setSearchingMovie] = useState(inputMovie);
+    const [movies, setMovies] = useState(allMovies);
+    const [typing, setTyping] = useState(false);
     const searchingMovieRef = useRef('');
-    const [movies, setMovies] = useState([]);
     const [_, setError] = useState(null);
 
     const searchingForAMovie = event => {
         const { value } = event.target;
         searchingMovieRef.current = value;
         setSearchingMovie(value);
+        setTyping(true);
     }
 
     const getSearchingResult = useCallback(errorCatchingFunction(setError)(async () => {
-        await setTimer(1500);
+        const allMovies = [];
+        await setTimer(500);
         if (searchingMovieRef.current === searchingMovie) {
             const response = await fetch(`http://www.omdbapi.com/?apikey=${process.env.REACT_APP_API_KEY}&s=${searchingMovieRef.current}`);
             const data = await response.json();
-            setMovies(data);
+            Object.values(data).forEach(element => Array.isArray(element) && element.forEach(movie => allMovies.push(movie)));
+            setMovies(allMovies);
+            setTyping(false);
         }
-    }), [searchingMovie]);
+    }), [searchingMovie, typing]);
 
     useEffect(() => {
         getSearchingResult();
-    }, [getSearchingResult]);
+        sendTypingState(typing);
+    }, [getSearchingResult, dispatch]);
+
+    useEffect(() => {
+        dispatch({ type: 'GET_ALL_MOVIES', movies: { allMovies: movies, inputMovie: searchingMovie } });
+    }, [movies, dispatch]);
 
     return (
         <div className={styles.Search}>
@@ -47,6 +59,6 @@ const Search = () => {
             />
         </div>
     );
-}
+})
 
 export default Search;
