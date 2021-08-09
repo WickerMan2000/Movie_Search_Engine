@@ -1,21 +1,14 @@
 import { useReducer } from 'react';
 import InputContext from './InputContext';
 
-const initialState = { movies: { allMovies: [], inputMovie: '' }, movieDetails: {} };
+const initialState = { movies: { allMovies: [], inputMovie: '', warning: '' } };
 const { Provider } = InputContext;
 
 const InputContextProvider = ({ children }) => {
-    const [inputState, dispatchInput] = useReducer((state, action) => {
+    const [inputState, dispatchInput] = useReducer((_, action) => {
         if (action.type === 'GET_ALL_MOVIES') {
             return {
-                ...state,
                 movies: action.movies
-            }
-        }
-        if (action.type === 'MOVIE_DETAILS') {
-            return {
-                ...state,
-                movieDetails: action.movieDetails
             }
         }
         return initialState;
@@ -23,7 +16,6 @@ const InputContextProvider = ({ children }) => {
 
     const inputContext = {
         movies: inputState.movies,
-        movieDetails: inputState.movieDetails,
         dispatch: dispatchInput
     }
 

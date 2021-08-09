@@ -17,24 +17,32 @@ const Search = React.memo(({ sendTypingState }) => {
     const [searchingMovie, setSearchingMovie] = useState(inputMovie);
     const [movies, setMovies] = useState(allMovies);
     const [typing, setTyping] = useState(false);
-    const searchingMovieRef = useRef('');
+    const [message, setMessage] = useState('');
     const [_, setError] = useState(null);
+    const searchingMovieRef = useRef('');
 
     const searchingForAMovie = event => {
         const { value } = event.target;
         searchingMovieRef.current = value;
         setSearchingMovie(value);
         setTyping(true);
+        setMessage('');
     }
 
     const getSearchingResult = useCallback(errorCatchingFunction(setError)(async () => {
         const allMovies = [];
-        await setTimer(500);
+        await setTimer(1000);
         if (searchingMovieRef.current === searchingMovie) {
-            const response = await fetch(`http://www.omdbapi.com/?apikey=${process.env.REACT_APP_API_KEY}&s=${searchingMovieRef.current}`);
+            const response = await fetch(`http://www.omdbapi.com/?apikey=${process.env.REACT_APP_API_KEY}&s=${searchingMovieRef.current.trim()}`);
             const data = await response.json();
-            Object.values(data).forEach(element => Array.isArray(element) && element.forEach(movie => allMovies.push(movie)));
-            setMovies(allMovies);
+            if (data.Response === 'True') {
+                Object.values(data).forEach(element => Array.isArray(element) && element.forEach(movie => allMovies.push(movie)));
+                setMessage('');
+                setMovies(allMovies);
+            } else {
+                setMovies([]);
+                setMessage(data.Error);
+            }
             setTyping(false);
         }
     }), [searchingMovie, typing]);
@@ -45,8 +53,8 @@ const Search = React.memo(({ sendTypingState }) => {
     }, [getSearchingResult, dispatch]);
 
     useEffect(() => {
-        dispatch({ type: 'GET_ALL_MOVIES', movies: { allMovies: movies, inputMovie: searchingMovie } });
-    }, [movies, dispatch]);
+        dispatch({ type: 'GET_ALL_MOVIES', movies: { allMovies: movies, inputMovie: searchingMovie, warning: message } });
+    }, [movies, message, dispatch]);
 
     return (
         <div className={styles.Search}>

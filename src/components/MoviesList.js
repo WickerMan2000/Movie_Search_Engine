@@ -1,20 +1,19 @@
 import React, { useContext } from 'react';
 import InputContext from '../store/InputContext';
 import Movie from './Movie';
+import styles from './MoviesList.module.css';
 
 const MovieList = React.memo(() => {
-    const { movies: { allMovies } } = useContext(InputContext);
+    const { movies: { allMovies, warning } } = useContext(InputContext);
 
     return (
-        <div styles={{
-            "margin-top": "200px",
-            "margin-left": "100px"
-        }}>
-            {allMovies.map(({ Title, imdbID, Poster }) =>
-                <Movie
-                    id={imdbID}
-                    movieTitle={Title}
-                    poster={Poster} />)}
+        <div className={styles.MoviesList}>
+            {warning ? <p className={styles.Warning}>{warning}</p> :
+                allMovies.map(({ Title, imdbID, Poster }) =>
+                    <Movie
+                        id={imdbID}
+                        movieTitle={Title}
+                        poster={Poster} />)}
         </div >
     );
 })

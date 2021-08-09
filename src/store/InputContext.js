@@ -1,8 +1,7 @@
 import React from 'react';
 
 const InputContext = React.createContext({
-    movies: { allMovies: [], inputMovie: '' },
-    movieDetails: {},
+    movies: { allMovies: [], inputMovie: '', warning: '' },
     dispatch: () => { }
 })
 
